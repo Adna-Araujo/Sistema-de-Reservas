@@ -8,7 +8,8 @@ from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationE
 from email_validator import validate_email, EmailNotValidError
 
 # Importa a classe Usuario do modelo, que agora está em `models.py`
-from models import Usuario
+from models import Usuario, Reserva, Room
+
 
 # --- Formulário de Cadastro (RegistrationForm) ---
 class RegistrationForm(FlaskForm):
@@ -23,12 +24,12 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Cadastrar')
 
     def validate_username(self, username):
-        user = Usuario.query.filter_by(username=username.data).first()
+        user = User.query.filter_by(username=username.data).first()
         if user:
             raise ValidationError('Este nome de usuário já está em uso. Escolha outro.')
 
     def validate_email(self, email):
-        user = Usuario.query.filter_by(email=email.data).first()
+        user = User.query.filter_by(email=email.data).first()
         if user:
             raise ValidationError('Este e-mail já está cadastrado. Faça o login ou use outro e-mail.')
         

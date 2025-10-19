@@ -5,20 +5,17 @@ from flask import Flask, render_template, url_for, flash, redirect, request
 from flask_bcrypt import Bcrypt
 from flask_login import current_user, login_user, logout_user, login_required
 from forms import RegistrationForm, LoginForm, ReservaForm
-from models import Usuario, Reserva
-from extensions import db, login_manager # Importa as extensões globais
-from sqlalchemy.exc import IntegrityError # Importa para lidar com erros de BD
+from models import Usuario, Reserva, Room
+from extensions import db, login_manager  # Importa as extensões globais
+from sqlalchemy.exc import IntegrityError  # Importa para lidar com erros de BD
 
-# Variáveis globais para as extensões (definidas em extensions.py)
-# db = SQLAlchemy()
-# bcrypt = Bcrypt()
-# login_manager = LoginManager()
 
-# Configuração e Inicialização do Aplicativo (Padrão Factory)
+# ==============================
+# Função Factory para criar app
+# ==============================
 def create_app(config_class=None):
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key_if_not_set')
-    # Configuração do banco de dados SQLite
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -29,19 +26,17 @@ def create_app(config_class=None):
     login_manager.login_view = 'login'
     login_manager.login_message_category = 'info'
 
-    # Cria o contexto do aplicativo e as tabelas do banco de dados (se não existirem)
+    # Cria tabelas do banco
     with app.app_context():
-        # Cria as tabelas do banco de dados
         db.create_all()
 
-    # Rota para carregar o usuário
+    # =======================
+    # Funções e Rotas Flask
+    # =======================
     @login_manager.user_loader
     def load_user(user_id):
-        # Esta função carrega o usuário dado o ID.
-        # É usada pelo Flask-Login.
         return db.session.get(Usuario, int(user_id))
 
-    # Rotas da Aplicação
     @app.route("/")
     @app.route("/index")
     def index():
@@ -100,14 +95,19 @@ def create_app(config_class=None):
     @login_required
     def reservar():
         form = ReservaForm()
-        # Lógica de validação e salvamento da reserva virá aqui
-        
-        # NOTE: A rota agora existe, resolvendo o BuildError no index.html
+        # A lógica de reserva virá depois
         return render_template('reservar.html', title='Fazer Reserva', form=form)
 
     return app
 
-# Inicialização do Aplicativo
+
+# ====================================================
+# 🔹 Adicionado: Instancia app globalmente p/ seed.py
+# ====================================================
+app = create_app()
+
+# ====================================================
+# Inicialização direta (modo desenvolvimento)
+# ====================================================
 if __name__ == '__main__':
-    app = create_app()
     app.run(debug=True)
