@@ -1,42 +1,82 @@
-<!-- templates/reservar.html -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Fazer Reserva</title>
+    <title>{{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Fazer Reserva</h1>
+    <h1>{{ title }}</h1>
 
+    <!-- Mensagens de flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for category, message in messages %}
+            <li class="flash {{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Formulário -->
     <form method="POST">
         {{ form.hidden_tag() }}
 
-        <p>
-            <label for="room_id">Sala:</label>
-            <select name="room_id" id="room_id" required>
-                {% if request.args.get('room_id') %}
-                    <option value="{{ request.args.get('room_id') }}" selected>Sala selecionada</option>
-                {% endif %}
-                {% for sala in form.room_id.choices %}
-                    <option value="{{ sala[0] }}">{{ sala[1] }}</option>
-                {% endfor %}
-            </select>
-        </p>
+        <div>
+            {{ form.sala.label }}<br>
+            {{ form.sala(class="form-control") }}
+            {% if form.sala.errors %}
+                <ul class="errors">
+                    {% for error in form.sala.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
 
-        <p>
-            <label for="start_time">Início:</label>
-            {{ form.start_time(class="input") }}
-        </p>
+        <div>
+            {{ form.data.label }}<br>
+            {{ form.data(class="form-control", type="date") }}
+            {% if form.data.errors %}
+                <ul class="errors">
+                    {% for error in form.data.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
 
-        <p>
-            <label for="end_time">Fim:</label>
-            {{ form.end_time(class="input") }}
-        </p>
+        <div>
+            {{ form.hora.label }}<br>
+            {{ form.hora(class="form-control", placeholder="HH:MM") }}
+            {% if form.hora.errors %}
+                <ul class="errors">
+                    {% for error in form.hora.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
 
-        <button type="submit">Reservar</button>
+        <div>
+            {{ form.duracao.label }}<br>
+            {{ form.duracao(class="form-control") }}
+            {% if form.duracao.errors %}
+                <ul class="errors">
+                    {% for error in form.duracao.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
     </form>
 
-    <p><a href="{{ url_for('listar_salas') }}">Voltar para Salas</a></p>
+    <br>
+    <a href="{{ url_for('listar_salas') }}">Voltar para a lista de salas</a>
 </body>
 </html>

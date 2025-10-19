@@ -1,4 +1,3 @@
-<!-- templates/salas.html -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -9,14 +8,26 @@
 <body>
     <h1>Salas Disponíveis</h1>
 
-    <table border="1" cellpadding="8">
+    <!-- Mensagens de flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for category, message in messages %}
+            <li class="flash {{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Tabela de salas -->
+    <table border="1" cellpadding="10">
         <thead>
             <tr>
-                <th>Nome</th>
+                <th>Nome da Sala</th>
                 <th>Descrição</th>
                 <th>Capacidade</th>
                 <th>Status</th>
-                <th>Ação</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -25,12 +36,18 @@
                 <td>{{ sala.name }}</td>
                 <td>{{ sala.description }}</td>
                 <td>{{ sala.capacity }}</td>
-                <td>{{ sala.status }}</td>
                 <td>
-                    {% if sala.status == "Livre" %}
-                    <a href="{{ url_for('reservar') }}?room_id={{ sala.id }}">Reservar</a>
+                    {% if sala.status == 'Livre' %}
+                        <span style="color:green;">{{ sala.status }}</span>
                     {% else %}
-                    Ocupada
+                        <span style="color:red;">{{ sala.status }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if sala.status == 'Livre' %}
+                        <a href="{{ url_for('reservar') }}">Reservar</a>
+                    {% else %}
+                        Ocupada
                     {% endif %}
                 </td>
             </tr>
@@ -38,6 +55,7 @@
         </tbody>
     </table>
 
-    <p><a href="{{ url_for('index') }}">Voltar ao início</a></p>
+    <br>
+    <a href="{{ url_for('index') }}">Voltar para a página inicial</a>
 </body>
 </html>

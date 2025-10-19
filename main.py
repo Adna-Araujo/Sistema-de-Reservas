@@ -1,18 +1,15 @@
-# main.py
 
-# ======================
 # Importações
 # ======================
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, render_template, url_for, flash, redirect, request
 from flask_bcrypt import Bcrypt
 from flask_login import current_user, login_user, logout_user, login_required
 from forms import RegistrationForm, LoginForm, ReservaForm
-from models import Usuario, Reservation, Room  # unificado para evitar confusão
+from models import Usuario, Reserva, Room
 from extensions import db, login_manager
 from sqlalchemy.exc import IntegrityError
-
 
 # ======================
 # Função Factory
@@ -97,6 +94,7 @@ def create_app(config_class=None):
         logout_user()
         flash('Você saiu da sua conta.', 'info')
         return redirect(url_for('index'))
+
     # ----------------------
     # Listar Salas
     # ----------------------
@@ -108,11 +106,11 @@ def create_app(config_class=None):
         status_salas = []
 
         for sala in salas:
-            reserva_ativa = Reservation.query.filter(
-                Reservation.room_id == sala.id,
-                Reservation.start_time <= agora,
-                Reservation.end_time >= agora,
-                Reservation.status == 'reserved'
+            reserva_ativa = Reserva.query.filter(
+                Reserva.room_id == sala.id,
+                Reserva.start_time <= agora,
+                Reserva.end_time >= agora,
+                Reserva.status == 'reserved'
             ).first()
 
             status = "Ocupada" if reserva_ativa else "Livre"
@@ -125,6 +123,7 @@ def create_app(config_class=None):
             })
 
         return render_template("salas.html", salas=status_salas)
+
     # ----------------------
     # Fazer Reserva
     # ----------------------
@@ -132,22 +131,57 @@ def create_app(config_class=None):
     @login_required
     def reservar():
         form = ReservaForm()
+
+        # Preenche choices do select com as salas do banco
+        salas = Room.query.filter_by(is_active=True).all()
+        form.sala.choices = [(str(s.id), s.name) for s in salas]
+
         if form.validate_on_submit():
-            nova_reserva = Reservation(
-                room_id=form.room_id.data,
-                start_time=form.start_time.data,
-                end_time=form.end_time.data,
+            # Constrói datetime da reserva a partir da data e hora do formulário
+            try:
+                hora = form.hora.data
+                hora_split = hora.split(":")
+                hora_int = int(hora_split[0])
+                minuto_int = int(hora_split[1])
+                inicio = datetime.combine(form.data.data, datetime.min.time()) \
+                        .replace(hour=hora_int, minute=minuto_int)
+            except Exception:
+                flash("Hora inválida. Use formato HH:MM", "danger")
+                return redirect(url_for('reservar'))
+
+            duracao_horas = int(form.duracao.data)
+            fim = inicio + timedelta(hours=duracao_horas)
+
+            # Checa conflito
+            conflito = Reserva.query.filter(
+                Reserva.room_id == int(form.sala.data),
+                Reserva.status == 'reserved',
+                Reserva.start_time < fim,
+                Reserva.end_time > inicio
+            ).first()
+
+            if conflito:
+                flash("A sala já está reservada nesse horário.", "danger")
+                return redirect(url_for('reservar'))
+
+            # Cria reserva
+            nova_reserva = Reserva(
+                room_id=int(form.sala.data),
+                start_time=inicio,
+                end_time=fim,
                 client_name=current_user.username,
                 status='reserved'
             )
             db.session.add(nova_reserva)
             db.session.commit()
-            flash("Sala reservada com sucesso!", "success")
+            flash("Reserva realizada com sucesso!", "success")
             return redirect(url_for('listar_salas'))
 
         return render_template("reservar.html", title='Fazer Reserva', form=form)
 
     return app
+
+
 # ======================
 # Instância global
 # ======================
