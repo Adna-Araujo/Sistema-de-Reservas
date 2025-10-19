@@ -1,16 +1,24 @@
 {% extends "layout.html" %}
-{% block page_title %}Login{% endblock %}
+{% block page_title %}Cadastro{% endblock %}
 {% block content %}
-    <h2>Login</h2>
+    <h2>Cadastro de Usuário</h2>
     <form method="POST" action="">
         {{ form.hidden_tag() }} <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(class="form-control") }}
+            {% for error in form.username.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+        
+        <div class="form-group">
             {{ form.email.label }}
             {{ form.email(class="form-control") }}
             {% for error in form.email.errors %}
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </div>
-        
+
         <div class="form-group">
             {{ form.password.label }}
             {{ form.password(class="form-control") }}
@@ -18,18 +26,21 @@
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </div>
-
+        
         <div class="form-group">
-            {{ form.remember.label }}
-            {{ form.remember }}
+            {{ form.confirm_password.label }}
+            {{ form.confirm_password(class="form-control") }}
+            {% for error in form.confirm_password.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
         </div>
         
         <div class="form-group" style="margin-top: 20px;">
-            {{ form.submit(class="btn btn-primary") }}
+            {{ form.submit(class="btn btn-success") }}
         </div>
     </form>
     
     <small class="text-muted" style="display: block; margin-top: 15px;">
-        Precisa de uma conta? <a href="{{ url_for('register') }}">Cadastre-se</a>
+        Já tem uma conta? <a href="{{ url_for('login') }}">Faça Login</a>
     </small>
 {% endblock content %}
