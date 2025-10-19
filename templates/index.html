@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Reservas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Bem-vindo ao Sistema de Reservas</h1>
+    </header>
+    
+    <main>
+        <p>Utilize os botões abaixo para acessar a área de login ou começar a fazer uma reserva.</p>
+        
+        <div style="margin-top: 20px;">
+            <a href="{{ url_for('login') }}" style="padding: 10px 15px; margin-right: 15px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">
+                Login
+            </a>
+            
+            <a href="{{ url_for('reservar') }}" style="padding: 10px 15px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px;">
+                Reservar
+            </a>
+        </div>
+        
+        <p style="margin-top: 30px; font-size: 0.8em; color: #666;">Status do Projeto: Estrutura de Templates OK!</p>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
