@@ -1,8 +1,9 @@
 # Importações
 from datetime import datetime, date
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, DateField, TimeField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, DateField, TimeField, DateTimeField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from models import Room
 
 # Para a validação de email (necessita de `pip install email-validator`)
 from email_validator import validate_email, EmailNotValidError
@@ -44,26 +45,23 @@ class LoginForm(FlaskForm):
 
 # --- Formulário de Reserva (ReservaForm) - Novo da Fase 3 ---
 class ReservaForm(FlaskForm):
-    # Lista de salas de exemplo (Você pode expandir isso)
-    SALAS = [
-        ('Sala 1', 'Sala de Reunião Alpha (Capacidade 10)'),
-        ('Sala 2', 'Sala de Treinamento Beta (Capacidade 25)'),
-        ('Sala 3', 'Sala de Conferência Gamma (Capacidade 50)')
-    ]
+    # Campo para selecionar a sala dinamicamente do banco
+    sala = SelectField('Sala de Reunião', coerce=int, validators=[DataRequired()])
 
-    sala = SelectField('Sala de Reunião', choices=SALAS, validators=[DataRequired()])
-    
-    # Validação para garantir que a data seja hoje ou no futuro
-    data = DateField('Data da Reserva', format='%Y-%m-%d', validators=[DataRequired()])
-    
-    # Campo de Hora
-    hora = StringField('Hora (HH:MM)', validators=[DataRequired(), Length(min=5, max=5)]) # Usamos StringField e validaremos o formato HH:MM
-    
-    # Duração da Reserva em Horas (opcional)
+    # Data e hora de início da reserva
+    inicio = DateTimeField('Data e Hora de Início', format='%Y-%m-%d %H:%M', validators=[DataRequired()])
+
+    # Duração em horas (1 a 4 horas)
     duracao = SelectField('Duração (horas)', choices=[(str(i), f'{i} hora(s)') for i in range(1, 5)], validators=[DataRequired()])
-    
+
     submit = SubmitField('Fazer Reserva')
 
-    def validate_data(self, data):
-        if data.data < date.today():
-            raise ValidationError('A data da reserva não pode ser no passado.')
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Carrega as salas ativas do banco
+        self.sala.choices = [(room.id, f"{room.name} (Capacidade {room.capacity})") for room in Room.query.filter_by(is_active=True).all()]
+
+    # Validação para garantir que a data/hora seja hoje ou no futuro
+    def validate_inicio(self, inicio):
+        if inicio.data < datetime.now():
+            raise ValidationError('A data e hora da reserva não podem ser no passado.')

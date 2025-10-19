@@ -1,0 +1,43 @@
+<!-- templates/salas.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Salas Disponíveis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Salas Disponíveis</h1>
+
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Capacidade</th>
+                <th>Status</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sala in salas %}
+            <tr>
+                <td>{{ sala.name }}</td>
+                <td>{{ sala.description }}</td>
+                <td>{{ sala.capacity }}</td>
+                <td>{{ sala.status }}</td>
+                <td>
+                    {% if sala.status == "Livre" %}
+                    <a href="{{ url_for('reservar') }}?room_id={{ sala.id }}">Reservar</a>
+                    {% else %}
+                    Ocupada
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p><a href="{{ url_for('index') }}">Voltar ao início</a></p>
+</body>
+</html>

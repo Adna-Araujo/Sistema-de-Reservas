@@ -1,41 +1,49 @@
-# Importações de módulos
+# main.py
+
+# ======================
+# Importações
+# ======================
 import os
 from datetime import datetime
 from flask import Flask, render_template, url_for, flash, redirect, request
 from flask_bcrypt import Bcrypt
 from flask_login import current_user, login_user, logout_user, login_required
 from forms import RegistrationForm, LoginForm, ReservaForm
-from models import Usuario, Reserva, Room
-from extensions import db, login_manager  # Importa as extensões globais
-from sqlalchemy.exc import IntegrityError  # Importa para lidar com erros de BD
+from models import Usuario, Reservation, Room  # unificado para evitar confusão
+from extensions import db, login_manager
+from sqlalchemy.exc import IntegrityError
 
 
-# ==============================
-# Função Factory para criar app
-# ==============================
+# ======================
+# Função Factory
+# ======================
 def create_app(config_class=None):
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key_if_not_set')
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Inicializa as extensões com o app
+    # Inicializa extensões
     db.init_app(app)
     bcrypt = Bcrypt(app)
     login_manager.init_app(app)
     login_manager.login_view = 'login'
     login_manager.login_message_category = 'info'
 
-    # Cria tabelas do banco
+    # Cria tabelas
     with app.app_context():
         db.create_all()
 
-    # =======================
-    # Funções e Rotas Flask
-    # =======================
+    # ======================
+    # Login Manager
+    # ======================
     @login_manager.user_loader
     def load_user(user_id):
         return db.session.get(Usuario, int(user_id))
+
+    # ======================
+    # Rotas
+    # ======================
 
     @app.route("/")
     @app.route("/index")
@@ -46,7 +54,7 @@ def create_app(config_class=None):
     def register():
         if current_user.is_authenticated:
             return redirect(url_for('index'))
-        
+
         form = RegistrationForm()
         if form.validate_on_submit():
             try:
@@ -54,26 +62,25 @@ def create_app(config_class=None):
                 user = Usuario(username=form.username.data, email=form.email.data, password=hashed_password)
                 db.session.add(user)
                 db.session.commit()
-                flash(f'Conta criada com sucesso para {form.username.data}! Agora você pode fazer o login.', 'success')
+                flash(f'Conta criada com sucesso para {form.username.data}!', 'success')
                 return redirect(url_for('login'))
             except IntegrityError:
                 db.session.rollback()
-                flash('Erro ao criar conta. Usuário ou e-mail já existe.', 'danger')
+                flash('Erro: Usuário ou e-mail já existe.', 'danger')
             except Exception as e:
                 db.session.rollback()
                 flash(f'Ocorreu um erro inesperado: {e}', 'danger')
-        
+
         return render_template('register.html', title='Cadastro', form=form)
 
     @app.route("/login", methods=['GET', 'POST'])
     def login():
         if current_user.is_authenticated:
             return redirect(url_for('index'))
-        
+
         form = LoginForm()
         if form.validate_on_submit():
             user = db.session.execute(db.select(Usuario).filter_by(email=form.email.data)).scalar_one_or_none()
-
             if user and bcrypt.check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
                 next_page = request.args.get('next')
@@ -81,7 +88,7 @@ def create_app(config_class=None):
                 return redirect(next_page or url_for('index'))
             else:
                 flash('Falha no login. Verifique o e-mail e a senha.', 'danger')
-        
+
         return render_template('login.html', title='Login', form=form)
 
     @app.route("/logout")
@@ -90,24 +97,60 @@ def create_app(config_class=None):
         logout_user()
         flash('Você saiu da sua conta.', 'info')
         return redirect(url_for('index'))
+    # ----------------------
+    # Listar Salas
+    # ----------------------
+    @app.route("/salas")
+    @login_required
+    def listar_salas():
+        salas = Room.query.filter_by(is_active=True).all()
+        agora = datetime.utcnow()
+        status_salas = []
 
+        for sala in salas:
+            reserva_ativa = Reservation.query.filter(
+                Reservation.room_id == sala.id,
+                Reservation.start_time <= agora,
+                Reservation.end_time >= agora,
+                Reservation.status == 'reserved'
+            ).first()
+
+            status = "Ocupada" if reserva_ativa else "Livre"
+            status_salas.append({
+                'id': sala.id,
+                'name': sala.name,
+                'description': sala.description,
+                'capacity': sala.capacity,
+                'status': status
+            })
+
+        return render_template("salas.html", salas=status_salas)
+    # ----------------------
+    # Fazer Reserva
+    # ----------------------
     @app.route("/reservar", methods=['GET', 'POST'])
     @login_required
     def reservar():
         form = ReservaForm()
-        # A lógica de reserva virá depois
-        return render_template('reservar.html', title='Fazer Reserva', form=form)
+        if form.validate_on_submit():
+            nova_reserva = Reservation(
+                room_id=form.room_id.data,
+                start_time=form.start_time.data,
+                end_time=form.end_time.data,
+                client_name=current_user.username,
+                status='reserved'
+            )
+            db.session.add(nova_reserva)
+            db.session.commit()
+            flash("Sala reservada com sucesso!", "success")
+            return redirect(url_for('listar_salas'))
+
+        return render_template("reservar.html", title='Fazer Reserva', form=form)
 
     return app
-
-
-# ====================================================
-# 🔹 Adicionado: Instancia app globalmente p/ seed.py
-# ====================================================
+# ======================
+# Instância global
+# ======================
 app = create_app()
-
-# ====================================================
-# Inicialização direta (modo desenvolvimento)
-# ====================================================
 if __name__ == '__main__':
     app.run(debug=True)

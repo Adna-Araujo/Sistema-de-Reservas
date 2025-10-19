@@ -1,0 +1,42 @@
+<!-- templates/reservar.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Fazer Reserva</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Fazer Reserva</h1>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <p>
+            <label for="room_id">Sala:</label>
+            <select name="room_id" id="room_id" required>
+                {% if request.args.get('room_id') %}
+                    <option value="{{ request.args.get('room_id') }}" selected>Sala selecionada</option>
+                {% endif %}
+                {% for sala in form.room_id.choices %}
+                    <option value="{{ sala[0] }}">{{ sala[1] }}</option>
+                {% endfor %}
+            </select>
+        </p>
+
+        <p>
+            <label for="start_time">Início:</label>
+            {{ form.start_time(class="input") }}
+        </p>
+
+        <p>
+            <label for="end_time">Fim:</label>
+            {{ form.end_time(class="input") }}
+        </p>
+
+        <button type="submit">Reservar</button>
+    </form>
+
+    <p><a href="{{ url_for('listar_salas') }}">Voltar para Salas</a></p>
+</body>
+</html>
