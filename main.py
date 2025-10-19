@@ -101,11 +101,14 @@ def create_app(config_class=None):
     @app.route("/salas")
     @login_required
     def listar_salas():
+        # Pega todas as salas ativas
         salas = Room.query.filter_by(is_active=True).all()
         agora = datetime.utcnow()
-        status_salas = []
 
+        # Cria uma lista de salas com status atualizado
+        salas_com_status = []
         for sala in salas:
+            # Verifica se existe alguma reserva ativa no momento
             reserva_ativa = Reserva.query.filter(
                 Reserva.room_id == sala.id,
                 Reserva.start_time <= agora,
@@ -113,16 +116,15 @@ def create_app(config_class=None):
                 Reserva.status == 'reserved'
             ).first()
 
-            status = "Ocupada" if reserva_ativa else "Livre"
-            status_salas.append({
+            salas_com_status.append({
                 'id': sala.id,
                 'name': sala.name,
                 'description': sala.description,
                 'capacity': sala.capacity,
-                'status': status
+                'status': "Ocupada" if reserva_ativa else "Livre"
             })
 
-        return render_template("salas.html", salas=status_salas)
+        return render_template("salas.html", salas=salas_com_status)
 
     # ----------------------
     # Fazer Reserva

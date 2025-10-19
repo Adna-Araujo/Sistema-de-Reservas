@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .errors { color: red; list-style: none; padding-left: 0; }
+        .flashes { list-style: none; padding-left: 0; }
+        .flash.success { color: green; }
+        .flash.error { color: red; }
+        .form-control { padding: 5px; width: 250px; margin-bottom: 10px; }
+        .btn-primary { padding: 5px 10px; background-color: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary:hover { background-color: #0069d9; }
+    </style>
 </head>
 <body>
     <h1>{{ title }}</h1>
@@ -19,13 +28,13 @@
       {% endif %}
     {% endwith %}
 
-    <!-- Formulário -->
+    <!-- Formulário de reserva -->
     <form method="POST">
         {{ form.hidden_tag() }}
 
         <div>
             {{ form.sala.label }}<br>
-            {{ form.sala(class="form-control") }}
+            {{ form.sala(class="form-control", disabled=form.sala_disabled) }}
             {% if form.sala.errors %}
                 <ul class="errors">
                     {% for error in form.sala.errors %}
@@ -72,7 +81,7 @@
         </div>
 
         <div>
-            {{ form.submit(class="btn btn-primary") }}
+            {{ form.submit(class="btn-primary") }}
         </div>
     </form>
 

@@ -1,27 +1,19 @@
 # Importações
-from datetime import datetime, date
+from datetime import datetime
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, DateField, TimeField, DateTimeField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, DateTimeField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
-from models import Room
-
-# Para a validação de email (necessita de `pip install email-validator`)
-from email_validator import validate_email, EmailNotValidError
-
-# Importa a classe Usuario do modelo, que agora está em `models.py`
 from models import Usuario, Reserva, Room
 
+# Para validação de email
+from email_validator import validate_email, EmailNotValidError
 
-# --- Formulário de Cadastro (RegistrationForm) ---
+# --- Formulário de Cadastro ---
 class RegistrationForm(FlaskForm):
-    username = StringField('Nome de Usuário', 
-                           validators=[DataRequired(), Length(min=2, max=20)])
-    email = StringField('Email', 
-                        validators=[DataRequired(), Email()])
-    password = PasswordField('Senha', 
-                             validators=[DataRequired()])
-    confirm_password = PasswordField('Confirmar Senha', 
-                                     validators=[DataRequired(), EqualTo('password')])
+    username = StringField('Nome de Usuário', validators=[DataRequired(), Length(min=2, max=20)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Senha', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirmar Senha', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Cadastrar')
 
     def validate_username(self, username):
@@ -33,21 +25,19 @@ class RegistrationForm(FlaskForm):
         user = Usuario.query.filter_by(email=email.data).first()
         if user:
             raise ValidationError('Este e-mail já está cadastrado. Faça o login ou use outro e-mail.')
-        
-# --- Formulário de Login (LoginForm) ---
+
+# --- Formulário de Login ---
 class LoginForm(FlaskForm):
-    email = StringField('Email', 
-                        validators=[DataRequired(), Email()])
-    password = PasswordField('Senha', 
-                             validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Senha', validators=[DataRequired()])
     remember = BooleanField('Lembrar-me')
     submit = SubmitField('Login')
 
-# --- Formulário de Reserva (ReservaForm) - Novo da Fase 3 ---
+# --- Formulário de Reserva ---
 class ReservaForm(FlaskForm):
     # Campo para selecionar a sala dinamicamente do banco
     sala = SelectField('Sala de Reunião', coerce=int, validators=[DataRequired()])
-
+    
     # Data e hora de início da reserva
     inicio = DateTimeField('Data e Hora de Início', format='%Y-%m-%d %H:%M', validators=[DataRequired()])
 
@@ -56,10 +46,17 @@ class ReservaForm(FlaskForm):
 
     submit = SubmitField('Fazer Reserva')
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, sala_id=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Carrega as salas ativas do banco
         self.sala.choices = [(room.id, f"{room.name} (Capacidade {room.capacity})") for room in Room.query.filter_by(is_active=True).all()]
+        
+        # Se sala_id for passado, pré-seleciona e desabilita
+        if sala_id:
+            self.sala.data = sala_id
+            self.sala_disabled = True  # atributo que o template vai usar
+        else:
+            self.sala_disabled = False
 
     # Validação para garantir que a data/hora seja hoje ou no futuro
     def validate_inicio(self, inicio):
