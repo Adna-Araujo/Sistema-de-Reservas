@@ -48,7 +48,6 @@
     <div class="container">
         <h1>Bem-vindo ao Sistema de Reservas</h1>
         
-        <!-- Aqui iremos exibir o status de desenvolvimento. -->
         {% if status %}
             <p style="color: #28a745; font-weight: bold;">{{ status }}</p>
         {% endif %}
@@ -58,8 +57,11 @@
         <div class="link-area">
             {% if current_user.is_authenticated %}
                 <p style="color: #007bff; font-weight: bold;">Você está logado como: {{ current_user.username }}</p>
-                <!-- NOTE: O link 'reservar' está comentado, pois a rota ainda não existe na Fase 2 -->
-                <!-- <a href="{{ url_for('reservar') }}" style="background-color: #28a745;">Fazer Reserva</a> -->
+
+                <!-- Link para a lista de salas -->
+                <a href="{{ url_for('listar_salas') }}" style="background-color: #28a745;">Ver Lista de Salas</a>
+
+                <!-- Link de logout -->
                 <a href="{{ url_for('logout') }}" style="background-color: #dc3545;">Logout</a>
             {% else %}
                 <a href="{{ url_for('login') }}" style="background-color: #007bff;">Login</a>

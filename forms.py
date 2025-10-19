@@ -8,7 +8,9 @@ from models import Usuario, Reserva, Room
 # Para validação de email
 from email_validator import validate_email, EmailNotValidError
 
-# --- Formulário de Cadastro ---
+# ======================
+# Formulário de Cadastro
+# ======================
 class RegistrationForm(FlaskForm):
     username = StringField('Nome de Usuário', validators=[DataRequired(), Length(min=2, max=20)])
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -26,39 +28,31 @@ class RegistrationForm(FlaskForm):
         if user:
             raise ValidationError('Este e-mail já está cadastrado. Faça o login ou use outro e-mail.')
 
-# --- Formulário de Login ---
+# ======================
+# Formulário de Login
+# ======================
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Senha', validators=[DataRequired()])
     remember = BooleanField('Lembrar-me')
     submit = SubmitField('Login')
 
-# --- Formulário de Reserva ---
+# ======================
+# Formulário de Reserva
+# ======================
 class ReservaForm(FlaskForm):
     # Campo para selecionar a sala dinamicamente do banco
     sala = SelectField('Sala de Reunião', coerce=int, validators=[DataRequired()])
-    
+
     # Data e hora de início da reserva
     inicio = DateTimeField('Data e Hora de Início', format='%Y-%m-%d %H:%M', validators=[DataRequired()])
 
     # Duração em horas (1 a 4 horas)
-    duracao = SelectField('Duração (horas)', choices=[(str(i), f'{i} hora(s)') for i in range(1, 5)], validators=[DataRequired()])
+    duracao = SelectField('Duração (horas)',
+                          choices=[(str(i), f'{i} hora(s)') for i in range(1, 5)],
+                          validators=[DataRequired()])
 
     submit = SubmitField('Fazer Reserva')
 
     def __init__(self, sala_id=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Carrega as salas ativas do banco
-        self.sala.choices = [(room.id, f"{room.name} (Capacidade {room.capacity})") for room in Room.query.filter_by(is_active=True).all()]
-        
-        # Se sala_id for passado, pré-seleciona e desabilita
-        if sala_id:
-            self.sala.data = sala_id
-            self.sala_disabled = True  # atributo que o template vai usar
-        else:
-            self.sala_disabled = False
-
-    # Validação para garantir que a data/hora seja hoje ou no futuro
-    def validate_inicio(self, inicio):
-        if inicio.data < datetime.now():
-            raise ValidationError('A data e hora da reserva não podem ser no passado.')

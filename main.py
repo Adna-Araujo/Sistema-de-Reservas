@@ -1,4 +1,3 @@
-
 # Importações
 # ======================
 import os
@@ -41,7 +40,6 @@ def create_app(config_class=None):
     # ======================
     # Rotas
     # ======================
-
     @app.route("/")
     @app.route("/index")
     def index():
@@ -101,14 +99,11 @@ def create_app(config_class=None):
     @app.route("/salas")
     @login_required
     def listar_salas():
-        # Pega todas as salas ativas
         salas = Room.query.filter_by(is_active=True).all()
         agora = datetime.utcnow()
 
-        # Cria uma lista de salas com status atualizado
         salas_com_status = []
         for sala in salas:
-            # Verifica se existe alguma reserva ativa no momento
             reserva_ativa = Reserva.query.filter(
                 Reserva.room_id == sala.id,
                 Reserva.start_time <= agora,
@@ -132,31 +127,18 @@ def create_app(config_class=None):
     @app.route("/reservar", methods=['GET', 'POST'])
     @login_required
     def reservar():
-        form = ReservaForm()
-
-        # Preenche choices do select com as salas do banco
-        salas = Room.query.filter_by(is_active=True).all()
-        form.sala.choices = [(str(s.id), s.name) for s in salas]
+        # Pega sala_id da URL para pré-selecionar no formulário
+        sala_id = request.args.get("sala_id", type=int)
+        form = ReservaForm(sala_id=sala_id)  # passa sala_id para o formulário
 
         if form.validate_on_submit():
-            # Constrói datetime da reserva a partir da data e hora do formulário
-            try:
-                hora = form.hora.data
-                hora_split = hora.split(":")
-                hora_int = int(hora_split[0])
-                minuto_int = int(hora_split[1])
-                inicio = datetime.combine(form.data.data, datetime.min.time()) \
-                        .replace(hour=hora_int, minute=minuto_int)
-            except Exception:
-                flash("Hora inválida. Use formato HH:MM", "danger")
-                return redirect(url_for('reservar'))
-
+            inicio = form.inicio.data
             duracao_horas = int(form.duracao.data)
             fim = inicio + timedelta(hours=duracao_horas)
 
             # Checa conflito
             conflito = Reserva.query.filter(
-                Reserva.room_id == int(form.sala.data),
+                Reserva.room_id == form.sala.data,
                 Reserva.status == 'reserved',
                 Reserva.start_time < fim,
                 Reserva.end_time > inicio
@@ -164,11 +146,11 @@ def create_app(config_class=None):
 
             if conflito:
                 flash("A sala já está reservada nesse horário.", "danger")
-                return redirect(url_for('reservar'))
+                return redirect(url_for('reservar', sala_id=form.sala.data))
 
             # Cria reserva
             nova_reserva = Reserva(
-                room_id=int(form.sala.data),
+                room_id=form.sala.data,
                 start_time=inicio,
                 end_time=fim,
                 client_name=current_user.username,

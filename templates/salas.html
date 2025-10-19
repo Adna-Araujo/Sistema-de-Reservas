@@ -12,6 +12,7 @@
         th, td {
             padding: 10px;
             text-align: left;
+            border-bottom: 1px solid #ddd;
         }
         th {
             background-color: #f2f2f2;
@@ -23,7 +24,7 @@
         .flash.success {
             color: green;
         }
-        .flash.error {
+        .flash.danger {
             color: red;
         }
         a.reservar-btn {
@@ -54,7 +55,7 @@
     {% endwith %}
 
     <!-- Tabela de salas -->
-    <table border="1">
+    <table>
         <thead>
             <tr>
                 <th>Nome da Sala</th>
