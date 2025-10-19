@@ -1,109 +1,113 @@
+# Importações de módulos
+import os
+from datetime import datetime
 from flask import Flask, render_template, url_for, flash, redirect, request
-from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt # <== NOVO
-from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required # <== NOVO
-from forms import RegistrationForm, LoginForm # <== NOVO: Criaremos forms.py em seguida
+from flask_bcrypt import Bcrypt
+from flask_login import current_user, login_user, logout_user, login_required
+from forms import RegistrationForm, LoginForm, ReservaForm
+from models import Usuario, Reserva
+from extensions import db, login_manager # Importa as extensões globais
+from sqlalchemy.exc import IntegrityError # Importa para lidar com erros de BD
 
+# Variáveis globais para as extensões (definidas em extensions.py)
+# db = SQLAlchemy()
+# bcrypt = Bcrypt()
+# login_manager = LoginManager()
 
-# 1. Cria a instância do aplicativo
-app = Flask(__name__)
+# Configuração e Inicialização do Aplicativo (Padrão Factory)
+def create_app(config_class=None):
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default_secret_key_if_not_set')
+    # Configuração do banco de dados SQLite
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Configuração de chave secreta (OBRIGATÓRIA para Flask e sessões)
-# Em um ambiente real, este valor viria de variáveis de ambiente.
-app.config['SECRET_KEY'] = 'uma-chave-secreta-muito-segura-e-longa-12345'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    # Inicializa as extensões com o app
+    db.init_app(app)
+    bcrypt = Bcrypt(app)
+    login_manager.init_app(app)
+    login_manager.login_view = 'login'
+    login_manager.login_message_category = 'info'
 
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app) # <== NOVO
-login_manager = LoginManager(app) # <== NOVO
+    # Cria o contexto do aplicativo e as tabelas do banco de dados (se não existirem)
+    with app.app_context():
+        # Cria as tabelas do banco de dados
+        db.create_all()
 
-# Diz ao Flask-Login qual rota de login ele deve usar
-login_manager.login_view = 'login' 
-login_manager.login_message_category = 'info' # Categoria para mensagens de erro/aviso
+    # Rota para carregar o usuário
+    @login_manager.user_loader
+    def load_user(user_id):
+        # Esta função carrega o usuário dado o ID.
+        # É usada pelo Flask-Login.
+        return db.session.get(Usuario, int(user_id))
 
-class Usuario(db.Model, UserMixin): # <== ADICIONADO UserMixin
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
-    # Relação com Reservas
-    reservas = db.relationship('Reserva', backref='autor', lazy=True) # <== ADICIONADO: 'autor' será o apelido do usuário que criou a reserva
+    # Rotas da Aplicação
+    @app.route("/")
+    @app.route("/index")
+    def index():
+        return render_template('index.html', status="Estrutura de Templates OK!")
 
-    def __repr__(self):
-        return f"Usuário('{self.username}', '{self.email}')"
+    @app.route("/register", methods=['GET', 'POST'])
+    def register():
+        if current_user.is_authenticated:
+            return redirect(url_for('index'))
+        
+        form = RegistrationForm()
+        if form.validate_on_submit():
+            try:
+                hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+                user = Usuario(username=form.username.data, email=form.email.data, password=hashed_password)
+                db.session.add(user)
+                db.session.commit()
+                flash(f'Conta criada com sucesso para {form.username.data}! Agora você pode fazer o login.', 'success')
+                return redirect(url_for('login'))
+            except IntegrityError:
+                db.session.rollback()
+                flash('Erro ao criar conta. Usuário ou e-mail já existe.', 'danger')
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Ocorreu um erro inesperado: {e}', 'danger')
+        
+        return render_template('register.html', title='Cadastro', form=form)
 
-@login_manager.user_loader
-def load_user(user_id):
-    return Usuario.query.get(int(user_id))
+    @app.route("/login", methods=['GET', 'POST'])
+    def login():
+        if current_user.is_authenticated:
+            return redirect(url_for('index'))
+        
+        form = LoginForm()
+        if form.validate_on_submit():
+            user = db.session.execute(db.select(Usuario).filter_by(email=form.email.data)).scalar_one_or_none()
 
-# 2. Define a Rota Principal (Homepage)
-@app.route('/')
-def index():
-    # Agora renderizamos o arquivo index.html, passando uma variável de exemplo (status)
-    return render_template('index.html', status="Estrutura de Templates OK!")
+            if user and bcrypt.check_password_hash(user.password, form.password.data):
+                login_user(user, remember=form.remember.data)
+                next_page = request.args.get('next')
+                flash('Login realizado com sucesso!', 'success')
+                return redirect(next_page or url_for('index'))
+            else:
+                flash('Falha no login. Verifique o e-mail e a senha.', 'danger')
+        
+        return render_template('login.html', title='Login', form=form)
 
-# ROTA DE LOGIN
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-    # Se o usuário já estiver logado, redireciona para a home
-    if current_user.is_authenticated:
+    @app.route("/logout")
+    @login_required
+    def logout():
+        logout_user()
+        flash('Você saiu da sua conta.', 'info')
         return redirect(url_for('index'))
-        
-    form = LoginForm()
-    
-    if form.validate_on_submit():
-        user = Usuario.query.filter_by(email=form.email.data).first()
-        
-        # Checa se o usuário existe E se a senha criptografada confere
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
-            login_user(user, remember=form.remember.data) # Usa Flask-Login
-            
-            # Pega o parâmetro 'next' da URL (se o usuário tentou acessar uma página protegida antes)
-            next_page = request.args.get('next')
-            
-            flash('Login bem-sucedido!', 'success')
-            
-            # Redireciona para a página 'next' ou para a página inicial
-            return redirect(next_page) if next_page else redirect(url_for('index'))
-        else:
-            flash('Login sem sucesso. Por favor, verifique email e senha.', 'danger')
-            
-    return render_template('login.html', title='Login', form=form)
 
-# ROTA DE LOGOUT
-@app.route("/logout")
-def logout():
-    logout_user() # Função Flask-Login para remover usuário da sessão
-    flash('Você foi desconectado com sucesso.', 'info')
-    return redirect(url_for('index'))
+    @app.route("/reservar", methods=['GET', 'POST'])
+    @login_required
+    def reservar():
+        form = ReservaForm()
+        # Lógica de validação e salvamento da reserva virá aqui
+        
+        # NOTE: A rota agora existe, resolvendo o BuildError no index.html
+        return render_template('reservar.html', title='Fazer Reserva', form=form)
 
-# ROTA DE CADASTRO
-@app.route("/register", methods=['GET', 'POST'])
-def register():
-    # Se o usuário já estiver logado, redireciona para a home
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-        
-    form = RegistrationForm()
-    
-    # Se o formulário for submetido e validado (incluindo validações do BD)
-    if form.validate_on_submit():
-        # Criptografa a senha antes de salvar no banco de dados
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        
-        user = Usuario(username=form.username.data, email=form.email.data, password=hashed_password)
-        
-        db.session.add(user)
-        db.session.commit()
-        
-        flash(f'Conta criada para {form.username.data}! Agora você pode fazer login.', 'success')
-        
-        return redirect(url_for('login'))
-        
-    return render_template('register.html', title='Cadastro', form=form)
+    return app
 
-# 3. Bloco principal para rodar o aplicativo
+# Inicialização do Aplicativo
 if __name__ == '__main__':
-    # O 'debug=True' permite recarregamento automático durante o desenvolvimento
-    app.run(debug=True, host='0.0.0.0')
+    app = create_app()
+    app.run(debug=True)
