@@ -24,7 +24,7 @@
             {% if current_user.is_authenticated %}
                 <p style="text-align: right;">Logado como: {{ current_user.username }} | <a href="{{ url_for('logout') }}">Sair</a></p>
             {% else %}
-                <p style="text-align: right;"><a href="{{ url_for('login') }}">Login</a> | <a href="{{ url_for('register') }}">Cadastro</a></p>
+                <p style="text-align: right;"><a href="{{ url_for('main_bp.login') }}">Login</a> | <a href="{{ url_for('main_bp.register') }}">Cadastro</a></p>
             {% endif %}
             
             <h1>{% block page_title %}Sistema de Reservas{% endblock %}</h1>

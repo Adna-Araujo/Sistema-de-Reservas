@@ -1,4 +1,4 @@
-from extensions import db, login_manager
+from .extensions import db, login_manager
 from flask_login import UserMixin
 from datetime import datetime, timezone # <-- ADICIONADA A IMPORTAÇÃO DE TIMEZONE
 
@@ -19,8 +19,8 @@ class Usuario(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
     
-    # 🟢 ADIÇÃO PARA CONTROLE DE ADMINISTRAÇÃO
-    is_admin = db.Column(db.Boolean, nullable=False, default=False) 
+    #ADIÇÃO PARA CONTROLE DE ADMINISTRAÇÃO
+    is_admin = db.Column(db.Boolean, default=False)
 
     reservas = db.relationship('Reserva', backref='autor', lazy=True)
 

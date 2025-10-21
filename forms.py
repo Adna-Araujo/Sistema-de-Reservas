@@ -3,7 +3,8 @@ from datetime import datetime
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, DateTimeField, IntegerField # <-- ADICIONADO IntegerField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, NumberRange # <-- ADICIONADO NumberRange
-from models import Usuario, Reserva, Room
+from .models import Usuario, Reserva, Room
+from .extensions import db
 
 # Para validação de email
 from email_validator import validate_email, EmailNotValidError

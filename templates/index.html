@@ -58,14 +58,12 @@
             {% if current_user.is_authenticated %}
                 <p style="color: #007bff; font-weight: bold;">Você está logado como: {{ current_user.username }}</p>
 
-                <!-- Link para a lista de salas -->
-                <a href="{{ url_for('listar_salas') }}" style="background-color: #28a745;">Ver Lista de Salas</a>
+                <a href="{{ url_for('main_bp.listar_salas') }}" style="background-color: #28a745;">Ver Lista de Salas</a>
 
-                <!-- Link de logout -->
-                <a href="{{ url_for('logout') }}" style="background-color: #dc3545;">Logout</a>
+                <a href="{{ url_for('main_bp.logout') }}" style="background-color: #dc3545;">Logout</a>
             {% else %}
-                <a href="{{ url_for('login') }}" style="background-color: #007bff;">Login</a>
-                <a href="{{ url_for('register') }}" style="background-color: #6c757d;">Cadastrar</a>
+                <a href="{{ url_for('main_bp.login') }}" style="background-color: #007bff;">Login</a>
+                <a href="{{ url_for('main_bp.register') }}" style="background-color: #6c757d;">Cadastrar</a>
             {% endif %}
         </div>
     </div>

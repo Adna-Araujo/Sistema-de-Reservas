@@ -21,8 +21,8 @@
     <h1>{{ title }}</h1>
 
     <div class="admin-nav">
-        <a href="{{ url_for('dashboard') }}">Painel</a>
-        <a href="{{ url_for('gerenciar_salas') }}">Gerenciar Salas</a>
+        <a href="{{ url_for('admin_bp.dashboard') }}">Painel</a>
+        <a href="{{ url_for('admin_bp.gerenciar_salas') }}">Gerenciar Salas</a>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -72,6 +72,6 @@
         </div>
     </form>
     
-    <p><a href="{{ url_for('gerenciar_salas') }}">Voltar para a Gestão de Salas</a></p>
+    <p><a href="{{ url_for('admin_bp.gerenciar_salas') }}">Voltar para a Gestão de Salas</a></p>
 </body>
 </html>

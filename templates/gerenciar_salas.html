@@ -21,9 +21,9 @@
     <h1>{{ title }}</h1>
 
     <div class="admin-nav">
-        <a href="{{ url_for('dashboard') }}">Painel Principal</a>
-        <a href="{{ url_for('gerenciar_salas') }}">Gerenciar Salas</a>
-        <a href="{{ url_for('adicionar_sala') }}" class="btn-add">Adicionar Nova Sala</a>
+        <a href="{{ url_for('admin_bp.dashboard') }}">Painel Principal</a>
+        <a href="{{ url_for('admin_bp.gerenciar_salas') }}">Gerenciar Salas</a>
+        <a href="{{ url_for('admin_bp.adicionar_sala') }}" class="btn-add">Adicionar Nova Sala</a>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -61,16 +61,16 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{{ url_for('editar_sala', sala_id=sala.id) }}">Editar</a>
+                    <a href="{{ url_for('admin_bp.editar_sala', sala_id=sala.id) }}">Editar</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% else %}
-        <p>Nenhuma sala cadastrada. <a href="{{ url_for('adicionar_sala') }}">Adicione a primeira sala.</a></p>
+        <p>Nenhuma sala cadastrada. <a href="{{ url_for('admin_bp.adicionar_sala') }}">Adicione a primeira sala.</a></p>
     {% endif %}
 
-    <p style="margin-top: 20px;"><a href="{{ url_for('dashboard') }}">Voltar para o Painel</a></p>
+    <p style="margin-top: 20px;"><a href="{{ url_for('admin_bp.dashboard') }}">Voltar para o Painel</a></p>
 </body>
 </html>
