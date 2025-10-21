@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 8px; box-sizing: border-box; }
+        .checkbox-group { display: flex; align-items: center; }
+        .checkbox-group input { width: auto; margin-right: 10px; }
+        .error { color: red; font-size: 0.9em; }
+        .flashes { list-style: none; padding-left: 0; }
+        .flash.danger { color: red; }
+        .admin-nav a { margin-right: 15px; text-decoration: none; font-weight: bold; color: #007BFF; }
+        .admin-nav { margin-bottom: 20px; padding: 10px; border-bottom: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+
+    <div class="admin-nav">
+        <a href="{{ url_for('dashboard') }}">Painel</a>
+        <a href="{{ url_for('gerenciar_salas') }}">Gerenciar Salas</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for category, message in messages %}
+            <li class="flash {{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.name.label }}
+            {{ form.name(size=50) }}
+            {% for error in form.name.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.description.label }}
+            {{ form.description(size=50) }}
+            {% for error in form.description.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-group">
+            {{ form.capacity.label }}
+            {{ form.capacity(min=1) }}
+            {% for error in form.capacity.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-group checkbox-group">
+            {{ form.is_active() }}
+            {{ form.is_active.label }}
+        </div>
+
+        <div class="form-group">
+            {{ form.submit() }}
+        </div>
+    </form>
+    
+    <p><a href="{{ url_for('gerenciar_salas') }}">Voltar para a Gestão de Salas</a></p>
+</body>
+</html>

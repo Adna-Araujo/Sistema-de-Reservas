@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .admin-nav { margin-bottom: 20px; padding: 10px; border-bottom: 2px solid #ccc; }
+        .admin-nav a { margin-right: 15px; text-decoration: none; font-weight: bold; color: #007BFF; }
+        .admin-nav a:hover { text-decoration: underline; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .btn-add { display: inline-block; padding: 8px 15px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px; margin-bottom: 10px; }
+        .status-active { color: green; font-weight: bold; }
+        .status-inactive { color: red; }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+
+    <div class="admin-nav">
+        <a href="{{ url_for('dashboard') }}">Painel Principal</a>
+        <a href="{{ url_for('gerenciar_salas') }}">Gerenciar Salas</a>
+        <a href="{{ url_for('adicionar_sala') }}" class="btn-add">Adicionar Nova Sala</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flashes" style="list-style: none; padding: 0;">
+          {% for category, message in messages %}
+            <li style="color: {% if category == 'success' %}green{% elif category == 'danger' %}red{% else %}blue{% endif %};">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    {% if salas %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome da Sala</th>
+                <th>Capacidade</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sala in salas %}
+            <tr>
+                <td>{{ sala.id }}</td>
+                <td>{{ sala.name }}</td>
+                <td>{{ sala.capacity }}</td>
+                <td>
+                    {% if sala.is_active %}
+                        <span class="status-active">Ativa</span>
+                    {% else %}
+                        <span class="status-inactive">Inativa</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('editar_sala', sala_id=sala.id) }}">Editar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>Nenhuma sala cadastrada. <a href="{{ url_for('adicionar_sala') }}">Adicione a primeira sala.</a></p>
+    {% endif %}
+
+    <p style="margin-top: 20px;"><a href="{{ url_for('dashboard') }}">Voltar para o Painel</a></p>
+</body>
+</html>

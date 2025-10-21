@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Estilos básicos como no seu reservar.html, talvez migrar para o style.css */
+        .flashes { list-style: none; padding-left: 0; }
+        .flash.success { color: green; }
+        .flash.danger { color: red; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .btn-danger { padding: 5px 10px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-danger:hover { background-color: #c82333; }
+        .status-reserved { font-weight: bold; color: blue; }
+        .status-cancelled { color: red; }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for category, message in messages %}
+            <li class="flash {{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <h2>Minhas Reservas Atuais e Futuras ({{ reservas|length }})</h2>
+
+    {% if reservas %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Sala</th>
+                    <th>Início</th>
+                    <th>Fim</th>
+                    <th>Status</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reserva in reservas %}
+                <tr>
+                    <td>{{ reserva.id }}</td>
+                    <td>{{ reserva.room.name }}</td> 
+                    <td>{{ reserva.start_time.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ reserva.end_time.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>
+                        <span class="status-{{ reserva.status }}">
+                            {{ 'Reservado' if reserva.status == 'reserved' else 'Cancelado' }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if reserva.status == 'reserved' and reserva.start_time|ensure_utc > agora %} 
+                            <form method="POST" action="{{ url_for('cancelar_reserva', reserva_id=reserva.id) }}" style="display:inline;">
+                                <input type="submit" value="Cancelar" class="btn-danger" onclick="return confirm('Tem certeza que deseja cancelar esta reserva?');">
+                            </form>
+                        {% elif reserva.start_time|ensure_utc <= agora %} 
+                            <span style="color: gray;">Concluída/Em Andamento</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Você não possui nenhuma reserva agendada.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('listar_salas') }}">Voltar para a lista de salas</a>
+</body>
+</html>

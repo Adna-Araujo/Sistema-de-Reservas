@@ -1,6 +1,13 @@
 from extensions import db, login_manager
 from flask_login import UserMixin
-from datetime import datetime
+from datetime import datetime, timezone # <-- ADICIONADA A IMPORTAÇÃO DE TIMEZONE
+
+# -------------------------
+# Função para default de data/hora (Timezone-aware)
+# -------------------------
+def get_utc_now():
+    """Retorna o datetime.now(timezone.utc) para evitar warnings e garantir consistência."""
+    return datetime.now(timezone.utc)
 
 # -------------------------
 # Usuário
@@ -11,11 +18,14 @@ class Usuario(db.Model, UserMixin):
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
+    
+    # 🟢 ADIÇÃO PARA CONTROLE DE ADMINISTRAÇÃO
+    is_admin = db.Column(db.Boolean, nullable=False, default=False) 
 
     reservas = db.relationship('Reserva', backref='autor', lazy=True)
 
     def __repr__(self):
-        return f"Usuario('{self.username}', '{self.email}')"
+        return f"Usuario('{self.username}', '{self.email}', Admin: {self.is_admin})"
 
 # -------------------------
 # Sala/Quarto
@@ -42,10 +52,14 @@ class Reserva(db.Model):
     room_id = db.Column(db.Integer, db.ForeignKey('rooms.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     client_name = db.Column(db.String(100), nullable=False)
-    start_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    end_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
+    # ⚠️ MUDANÇA: Usando get_utc_now como default (corrigindo o Warning)
+    start_time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=False)
+    
     status = db.Column(db.String(20), default='reserved')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # ⚠️ MUDANÇA: Usando get_utc_now como default
+    created_at = db.Column(db.DateTime, default=get_utc_now)
     cancelled_at = db.Column(db.DateTime, nullable=True)
 
     def __repr__(self):
@@ -56,4 +70,5 @@ class Reserva(db.Model):
 # -------------------------
 @login_manager.user_loader
 def load_user(user_id):
-    return Usuario.query.get(int(user_id))
+    # ⚠️ MUDANÇA: Usando db.session.get (correção do LegacyAPIWarning)
+    return db.session.get(Usuario, int(user_id))

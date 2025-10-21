@@ -18,7 +18,6 @@
 <body>
     <h1>{{ title }}</h1>
 
-    <!-- Mensagens de flash -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <ul class="flashes">
@@ -29,18 +28,17 @@
       {% endif %}
     {% endwith %}
 
-    <!-- Formulário de reserva -->
     <form method="POST">
         {{ form.hidden_tag() }}
 
-        <!-- Sala -->
         <div>
             {{ form.sala.label }}<br>
-            {% if form.sala_disabled %}
-                <input type="text" class="form-control" value="{{ form.sala.choices[0][1] }}" disabled>
+            {% if sala_disabled %}
+                <input type="text" class="form-control" value="{{ sala_nome }}" disabled> 
+                <input type="hidden" name="{{ form.sala.name }}" value="{{ form.sala.data }}"> 
             {% else %}
                 {{ form.sala(class="form-control") }}
-            {% endif %}
+            {% endif %} 			
             {% if form.sala.errors %}
                 <ul class="errors">
                     {% for error in form.sala.errors %}
@@ -50,10 +48,9 @@
             {% endif %}
         </div>
 
-        <!-- Data -->
         <div>
             {{ form.inicio.label }}<br>
-            {{ form.inicio(class="form-control", type="datetime-local") }}
+            {{ form.inicio(class="form-control") }} 
             {% if form.inicio.errors %}
                 <ul class="errors">
                     {% for error in form.inicio.errors %}
@@ -63,7 +60,6 @@
             {% endif %}
         </div>
 
-        <!-- Duração -->
         <div>
             {{ form.duracao.label }}<br>
             {{ form.duracao(class="form-control") }}
@@ -76,7 +72,6 @@
             {% endif %}
         </div>
 
-        <!-- Botão -->
         <div>
             {{ form.submit(class="btn-primary") }}
         </div>
