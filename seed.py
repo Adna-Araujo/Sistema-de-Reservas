@@ -1,4 +1,4 @@
-from main import app, db
+from reservas.__main__ import app, db
 from models import Room
 
 with app.app_context():

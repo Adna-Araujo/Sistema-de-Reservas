@@ -44,37 +44,37 @@
                     <th>Status</th>
                     <th>Ação</th>
                 </tr>
-            </thead>
-            <tbody>
-                {% for reserva in reservas %}
-                <tr>
-                    <td>{{ reserva.id }}</td>
-                    <td>{{ reserva.room.name }}</td> 
-                    <td>{{ reserva.start_time.strftime('%d/%m/%Y %H:%M') }}</td>
-                    <td>{{ reserva.end_time.strftime('%d/%m/%Y %H:%M') }}</td>
-                    <td>
-                        <span class="status-{{ reserva.status }}">
-                            {{ 'Reservado' if reserva.status == 'reserved' else 'Cancelado' }}
-                        </span>
-                    </td>
-                    <td>
-                        {% if reserva.status == 'reserved' and reserva.start_time|ensure_utc > agora %} 
-                            <form method="POST" action="{{ url_for('cancelar_reserva', reserva_id=reserva.id) }}" style="display:inline;">
-                                <input type="submit" value="Cancelar" class="btn-danger" onclick="return confirm('Tem certeza que deseja cancelar esta reserva?');">
-                            </form>
-                        {% elif reserva.start_time|ensure_utc <= agora %} 
-                            <span style="color: gray;">Concluída/Em Andamento</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>Você não possui nenhuma reserva agendada.</p>
-    {% endif %}
+            </thead>
+                <tbody>
+                {% for reserva in reservas %}
+                <tr>
+                    <td>{{ reserva.id }}</td>
+                    <td>{{ reserva.room.name }}</td> 
+                    <td>{{ reserva.start_time.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ reserva.end_time.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>
+                        <span class="status-{{ reserva.status }}">
+                            {{ 'Reservado' if reserva.status == 'reserved' else 'Cancelado' }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if reserva.status == 'reserved' and reserva.start_time|ensure_utc > agora %} 
+                            <form method="POST" action="{{ url_for('main_bp.cancelar_reserva', reserva_id=reserva.id) }}" style="display:inline;">
+                                <input type="submit" value="Cancelar" class="btn-danger" onclick="return confirm('Tem certeza que deseja cancelar esta reserva?');">
+                            </form>
+                        {% elif reserva.start_time|ensure_utc <= agora %} 
+                             <span style="color: gray;">Concluída/Em Andamento</span>
+                         {% endif %}
+                    </td>
+                </tr>
+                 {% endfor %}
+                </tbody>
+         </table>
+    {% else %}
+        <p>Você não possui nenhuma reserva agendada.</p>
+    {% endif %}
 
-    <br>
-    <a href="{{ url_for('listar_salas') }}">Voltar para a lista de salas</a>
+    <br>
+     <a href="{{ url_for('main_bp.listar_salas') }}">Voltar para a lista de salas</a>
 </body>
 </html>

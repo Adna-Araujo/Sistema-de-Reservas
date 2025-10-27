@@ -80,7 +80,7 @@
                 </td>
                 <td>
                     {% if sala.status == 'Livre' %}
-                        <a class="reservar-btn" href="{{ url_for('main_pb.reservar', sala_id=sala.id) }}">Reservar</a>
+                        <a class="reservar-btn" href="{{ url_for('main_bp.reservar', sala_id=sala.id) }}">Reservar</a>
                     {% else %}
                         Ocupada
                     {% endif %}
