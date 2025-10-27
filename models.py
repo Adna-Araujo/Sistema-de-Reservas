@@ -1,6 +1,6 @@
 from .extensions import db, login_manager
 from flask_login import UserMixin
-from datetime import datetime, timezone # <-- ADICIONADA A IMPORTAÇÃO DE TIMEZONE
+from datetime import datetime, timezone 
 
 # -------------------------
 # Função para default de data/hora (Timezone-aware)
@@ -14,14 +14,15 @@ def get_utc_now():
 # -------------------------
 class Usuario(db.Model, UserMixin):
     __tablename__ = 'usuario'
+    
+    # CORREÇÃO: Removida a declaração duplicada de is_admin. Deixamos apenas uma.
+    is_admin = db.Column(db.Boolean, default=False)
+    
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
+    password = db.Column(db.String(60), nullable=False) # Mantido como 'password'
     
-    #ADIÇÃO PARA CONTROLE DE ADMINISTRAÇÃO
-    is_admin = db.Column(db.Boolean, default=False)
-
     reservas = db.relationship('Reserva', backref='autor', lazy=True)
 
     def __repr__(self):
@@ -53,12 +54,11 @@ class Reserva(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     client_name = db.Column(db.String(100), nullable=False)
     
-    # ⚠️ MUDANÇA: Usando get_utc_now como default (corrigindo o Warning)
+    # Esta coluna é usada para o relatório!
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
     
     status = db.Column(db.String(20), default='reserved')
-    # ⚠️ MUDANÇA: Usando get_utc_now como default
     created_at = db.Column(db.DateTime, default=get_utc_now)
     cancelled_at = db.Column(db.DateTime, nullable=True)
 
@@ -70,5 +70,4 @@ class Reserva(db.Model):
 # -------------------------
 @login_manager.user_loader
 def load_user(user_id):
-    # ⚠️ MUDANÇA: Usando db.session.get (correção do LegacyAPIWarning)
     return db.session.get(Usuario, int(user_id))

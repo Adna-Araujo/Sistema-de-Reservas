@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
+from flask_admin import Admin
 
 # ====================================================================
 # INSTÂNCIAS GLOBAIS
@@ -11,3 +12,4 @@ from flask_login import LoginManager
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
+admin = Admin(name='Painel Executivo')
