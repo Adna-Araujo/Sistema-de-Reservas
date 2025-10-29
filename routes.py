@@ -59,7 +59,14 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = db.session.execute(db.select(Usuario).filter_by(email=form.email.data)).scalar_one_or_none()
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
+        
+        # CORREÇÃO: Converte o hash salvo no banco (user.password) de string para bytes
+        # O Flask-Bcrypt (por baixo dos panos) espera o hash salvo como bytes para evitar o 'Invalid salt'
+        user_password_bytes = user.password.encode('utf-8') if user and user.password else b''
+        
+        # AQUI estava o problema: 
+        if user and user_password_bytes and bcrypt.check_password_hash(user_password_bytes, form.password.data):
+        
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
             flash('Login realizado com sucesso!', 'success')

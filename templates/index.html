@@ -4,45 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Reservas</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-            color: #343a40;
-        }
-        .container {
-            width: 80%;
-            margin: 50px auto;
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        h1 {
-            color: #007bff;
-            margin-bottom: 20px;
-        }
-        p {
-            margin-bottom: 30px;
-            font-size: 1.1em;
-            color: #6c757d;
-        }
-        .link-area a {
-            padding: 10px 15px;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 0 10px;
-            transition: background-color 0.3s ease;
-            display: inline-block;
-        }
-        .link-area a:hover {
-            opacity: 0.85;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"> 
 </head>
 <body>
     <div class="container">
@@ -59,6 +21,10 @@
                 <p style="color: #007bff; font-weight: bold;">Você está logado como: {{ current_user.username }}</p>
 
                 <a href="{{ url_for('main_bp.listar_salas') }}" style="background-color: #28a745;">Ver Lista de Salas</a>
+
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.index') }}" style="background-color: #ffc107; color: #343a40;">Dashboard Admin</a>
+                {% endif %}
 
                 <a href="{{ url_for('main_bp.logout') }}" style="background-color: #dc3545;">Logout</a>
             {% else %}

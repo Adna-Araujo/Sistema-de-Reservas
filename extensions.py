@@ -10,6 +10,6 @@ from flask_admin import Admin
 # ====================================================================
 
 db = SQLAlchemy()
-bcrypt = Bcrypt()
 login_manager = LoginManager()
 admin = Admin(name='Painel Executivo')
+bcrypt = Bcrypt()

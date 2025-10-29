@@ -86,8 +86,8 @@
     // Envolver todo o código em uma IIFE para isolar o escopo e evitar conflitos de 'const/let'
     (function() { 
         // Dados passados do Python (usando o filtro 'tojson')
-        const labels = {{ labels | tojson }};
-        const dataValues = {{ data_values | tojson }};
+        const labels = JSON.parse('{{ labels | tojson | safe }}');
+        const dataValues = JSON.parse('{{ data_values | tojson | safe }}');
 
         if (dataValues.length > 0) {
             const ctx = document.getElementById('reservasChart').getContext('2d');
@@ -106,25 +106,31 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    // CORREÇÃO AQUI: Usando a sintaxe 'scales' da v4
                     scales: {
-                        yAxes: [{
+                        y: { // O nome do eixo é 'y' (antes era yAxes[0])
+                            beginAtZero: true,
                             ticks: {
-                                beginAtZero: true,
-                                // Garante que os ticks sejam inteiros (reservas)
-                                callback: function(value) {if (value % 1 === 0) {return value;}}
+                                // O 'callback' deve ser aplicado aos ticks
+                                callback: function(value) {
+                                    if (value % 1 === 0) return value;
+                                },
+                                color: '#e2e2e2' // Adicionando cor para o tema 'darkly'
                             }
-                        }],
-                        xAxes: [{
-                            // Configurações para rótulos de data
+                        },
+                        x: { // O nome do eixo é 'x' (antes era xAxes[0])
                             ticks: {
                                 autoSkip: true,
                                 maxRotation: 45,
-                                minRotation: 45
+                                minRotation: 45,
+                                color: '#e2e2e2' // Adicionando cor para o tema 'darkly'
                             }
-                        }]
+                        }
                     },
-                    legend: {
-                        display: false
+                    plugins: { // Agrupa configurações não relacionadas a escalas
+                        legend: {
+                            display: false
+                        }
                     }
                 }
             });

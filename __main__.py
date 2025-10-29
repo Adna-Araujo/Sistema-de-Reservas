@@ -1,5 +1,3 @@
-# C:\projetos\sistema de reservas\reservas\main.py
-
 # Importa a função de criação da aplicação do pacote 'reservas' (ou seja, de __init__.py)
 from reservas import create_app
 
