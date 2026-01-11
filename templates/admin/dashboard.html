@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <h2 class="logo">Tocaí Admin</h2>
+        <ul class="menu">
+            <li class="active"><i class="icon">🏠</i> Início</li>
+            <li><i class="icon">🛏️</i> Reservas</li>
+            <li><i class="icon">👥</i> Clientes</li>
+            <li><i class="icon">🏨</i> Quartos</li>
+            <li><i class="icon">⚙️</i> Configurações</li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <header>
+            <h1>Painel Administrativo</h1>
+            <div class="user-info">
+                <span>Administrador</span>
+                <img src="https://i.pravatar.cc/40" alt="User Avatar">
+            </div>
+        </header>
+
+        <section class="cards">
+            <div class="card">
+                <h3>Reservas do Dia</h3>
+                <p id="reservasDia">24</p>
+            </div>
+            <div class="card">
+                <h3>Quartos Ocupados</h3>
+                <p id="quartosOcupados">15</p>
+            </div>
+            <div class="card">
+                <h3>Clientes Ativos</h3>
+                <p id="clientesAtivos">87</p>
+            </div>
+            <div class="card">
+                <h3>Receita (R$)</h3>
+                <p id="receita">12.540</p>
+            </div>
+        </section>
+
+        <section class="tabela">
+            <h2>Últimas Reservas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Quarto</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaReservas">
+                    <tr>
+                        <td>Maria Silva</td>
+                        <td>102</td>
+                        <td>02/11</td>
+                        <td>04/11</td>
+                        <td>
+                            <button class="edit">Editar</button>
+                            <button class="delete">Excluir</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>João Costa</td>
+                        <td>204</td>
+                        <td>01/11</td>
+                        <td>03/11</td>
+                        <td>
+                            <button class="edit">Editar</button>
+                            <button class="delete">Excluir</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
