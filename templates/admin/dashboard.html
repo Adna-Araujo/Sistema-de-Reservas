@@ -1,89 +1,82 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="sidebar">
-        <h2 class="logo">Tocaí Admin</h2>
-        <ul class="menu">
-            <li class="active"><i class="icon">🏠</i> Início</li>
-            <li><i class="icon">🛏️</i> Reservas</li>
-            <li><i class="icon">👥</i> Clientes</li>
-            <li><i class="icon">🏨</i> Quartos</li>
-            <li><i class="icon">⚙️</i> Configurações</li>
-        </ul>
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="row mb-4">
+    <div class="col-md-12 text-right">
+        <a href="{{ url_for('main_bp.index') }}" class="btn btn-outline-light btn-sm">
+            <i class="fa fa-globe"></i> Ver Site
+        </a>
+        <a href="{{ url_for('main_bp.logout') }}" class="btn btn-outline-danger btn-sm">
+            <i class="fa fa-sign-out"></i> Sair
+        </a>
+    </div>
+</div>
+<div class="container-fluid" style="padding: 20px;">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="page-header">EscapingRooms - Painel de Controle</h2>
+        </div>
     </div>
 
-    <div class="main-content">
-        <header>
-            <h1>Painel Administrativo</h1>
-            <div class="user-info">
-                <span>Administrador</span>
-                <img src="https://i.pravatar.cc/40" alt="User Avatar">
+    <div class="row mt-3">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2 bg-dark text-white">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total de Reservas</div>
+                    <div class="h2 mb-0 font-weight-bold text-gray-800">{{ total_reservas or 0 }}</div>
+                </div>
             </div>
-        </header>
+        </div>
 
-        <section class="cards">
-            <div class="card">
-                <h3>Reservas do Dia</h3>
-                <p id="reservasDia">24</p>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2 bg-dark text-white">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Salas Ativas</div>
+                    <div class="h2 mb-0 font-weight-bold text-gray-800">{{ total_rooms or 0 }}</div>
+                </div>
             </div>
-            <div class="card">
-                <h3>Quartos Ocupados</h3>
-                <p id="quartosOcupados">15</p>
-            </div>
-            <div class="card">
-                <h3>Clientes Ativos</h3>
-                <p id="clientesAtivos">87</p>
-            </div>
-            <div class="card">
-                <h3>Receita (R$)</h3>
-                <p id="receita">12.540</p>
-            </div>
-        </section>
+        </div>
 
-        <section class="tabela">
-            <h2>Últimas Reservas</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Cliente</th>
-                        <th>Quarto</th>
-                        <th>Check-in</th>
-                        <th>Check-out</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="tabelaReservas">
-                    <tr>
-                        <td>Maria Silva</td>
-                        <td>102</td>
-                        <td>02/11</td>
-                        <td>04/11</td>
-                        <td>
-                            <button class="edit">Editar</button>
-                            <button class="delete">Excluir</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>João Costa</td>
-                        <td>204</td>
-                        <td>01/11</td>
-                        <td>03/11</td>
-                        <td>
-                            <button class="edit">Editar</button>
-                            <button class="delete">Excluir</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
+        <div class="col-xl-4 col-md-12 mb-4">
+            <div class="card border-left-info shadow h-100 py-2 bg-dark text-white">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Status do Servidor</div>
+                    <div class="h2 mb-0 font-weight-bold text-gray-800">Online</div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script src="script.js"></script>
-</body>
-</html>
+    <div class="card shadow mb-4 bg-dark text-white">
+        <div class="card-header py-3 bg-secondary">
+            <h6 class="m-0 font-weight-bold">Últimas 5 Reservas</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Sala</th>
+                            <th>Início</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in ultimas_reservas %}
+                        <tr>
+                            <td>{{ reserva.nome_cliente }}</td>
+                            <td>{{ reserva.room.name if reserva.room else 'N/A' }}</td>
+                            <td>{{ reserva.start_time.strftime('%d/%m %H:%M') if reserva.start_time else '-' }}</td>
+                            <td><span class="badge badge-primary">{{ reserva.status }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="text-center">Nenhuma reserva recente.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

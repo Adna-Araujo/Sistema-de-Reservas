@@ -11,6 +11,8 @@ from datetime import datetime, timedelta, time
 import random
 from faker import Faker
 
+# ----------------------------------------------------
+
 # --- Inicialização do App FORA do escopo 'with app.app_context()' ---
 app = create_app()
 
@@ -18,9 +20,34 @@ app = create_app()
 # 1. Configuração do Faker e Parâmetros
 # ----------------------------------------------------
 fake = Faker('pt_BR')  # Inicializa o Faker
-NUM_RESERVAS = 200     # Quantidade total de reservas a serem criadas
-DIAS_ATRAS = 14        # Período de 14 dias atrás até hoje
+NUM_RESERVAS = 350     # Quantidade total de reservas a serem criadas
+DIAS_ATRAS = 30        # Período de 14 dias atrás até hoje
 
+from reservas.models import Room, Reserva, db
+from reservas import create_app, db
+
+def popular_salas():
+    with app.app_context():
+        # Lista de salas temáticas de Escape Room
+        salas_temas = [
+            {'name': 'Laboratório Zumbi', 'capacity': 6},
+            {'name': 'Assalto ao Banco', 'capacity': 5},
+            {'name': 'Cativeiro do Serial Killer', 'capacity': 4},
+            {'name': 'O Mistério da Pirâmide', 'capacity': 8}
+        ]
+
+        for sala in salas_temas:
+            # Verifica se a sala já existe para não duplicar
+            if not Room.query.filter_by(name=sala['name']).first():
+                nova_sala = Room(name=sala['name'], capacity=sala['capacity'])
+                db.session.add(nova_sala)
+        
+        db.session.commit()
+        print("✅ Salas temáticas criadas com sucesso!")
+
+if __name__ == "__main__":
+    popular_salas()
+    # Chame sua função de reservas logo abaixo aqui...
 with app.app_context():
     
     # ----------------------------------------------------

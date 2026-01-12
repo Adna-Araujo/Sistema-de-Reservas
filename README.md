@@ -1,70 +1,77 @@
-Sistema de Reservas
-[imagem aqui]
+🚪 Sistema de Reservas - EscapingRooms
+O EscapingRooms é uma aplicação Full Stack desenvolvida para automatizar o agendamento de sessões de Escape Room e o gerenciamento administrativo. O projeto foca em uma experiência imersiva para o cliente e um controle centralizado para o administrador, utilizando um banco de dados relacional integrado.
 
-O Sistema de Reservas é uma aplicação Full Stack desenvolvida para automatizar o agendamento de serviços e o gerenciamento administrativo. O projeto foca em uma experiência fluida para o cliente e um controle centralizado para o administrador, utilizando um banco de dados integrado para persistência de informações.
+📝 Sobre o Projeto
+Este projeto foi criado para resolver a necessidade de organização em fluxos de agendamentos complexos. A aplicação permite que usuários visualizem salas temáticas e realizem reservas, enquanto fornece ao administrador um painel de controle (ERP) para gerenciar o fluxo de trabalho, monitorar a ocupação das salas e analisar o desempenho do negócio.
 
-Sobre o Projeto
-Este projeto foi criado para resolver a necessidade de organização em fluxos de agendamentos manuais. A aplicação permite que usuários visualizem horários e realizem reservas, enquanto fornece ao administrador uma interface para controle total do fluxo de trabalho.
+✨ Funcionalidades Principais
+👤 Área do Cliente
+Landing Page Imersiva: Interface moderna em Dark Mode com cards dinâmicos para cada sala temática.
 
-Funcionalidades Principais
-Área do Cliente:
+Visualização de Salas: Informações de capacidade e temática puxadas diretamente do banco de dados.
 
-Interface para realização de novos agendamentos.
+Fluxo de Reserva: Botões de ação rápida para agendamento por categoria.
 
-Confirmação visual após a conclusão da reserva.
+🔐 Área Administrativa (Flask-Admin)
+Dashboard de Métricas: Cards com contagem total de reservas e salas ativas.
 
-Área Administrativa:
+Relatório de Desempenho: Gráficos diários de agendamentos utilizando Chart.js.
 
-Dashboard para visualização de todas as reservas cadastradas.
+Gestão de Inventário: Controle total sobre salas (Rooms), Usuários e Reservas (CRUD completo).
 
-Gestão de dados: edição e exclusão de reservas e clientes.
+Exportação de Dados: Funcionalidade de exportação de relatórios em formato CSV.
 
-Acompanhamento de métricas de agendamentos por período.
-
-[imagem aqui]
-
-Tecnologias Utilizadas
-Linguagem: Python 3.x
+🛠️ Tecnologias Utilizadas
+Linguagem: Python 3.12
 
 Framework Web: Flask
 
-Banco de Dados: SQLite
+Banco de Dados: SQLite com SQLAlchemy (ORM)
 
-Frontend: HTML5 e CSS3
+Painel Admin: Flask-Admin com interface Bootstrap 4
 
-Como Executar o Projeto
-Clone o repositório do projeto em sua máquina local.
+Segurança: Flask-Login para autenticação de administradores
 
-Crie um ambiente virtual com o comando: python -m venv .venv
+Visualização de Dados: Chart.js
+
+🚀 Como Executar o Projeto
+Clone o repositório em sua máquina local.
+
+Crie um ambiente virtual: python -m venv .venv
 
 Ative o ambiente virtual:
 
-No Windows: .venv\Scripts\activate
+Windows: .venv\Scripts\activate
 
-No Linux/Mac: source .venv/bin/activate
+Linux/Mac: source .venv/bin/activate
 
-Instale as dependências necessárias: pip install flask
+Instale as dependências: pip install -r requirements.txt
 
+Popule o Banco de Dados (Seed): (Gera automaticamente 8 salas e 550 reservas para teste)
+
+Bash
+
+python -m reservas.seed
 Inicie a aplicação: python -m reservas
 
-Acesse o endereço http://127.0.0.1:5000 no seu navegador.
+Acesse http://127.0.0.1:5000 para o site ou http://127.0.0.1:5000/admin para a gestão.
 
-[imagem aqui]
+📁 Estrutura do Diretório
+reservas/: Pacote principal da aplicação.
 
-Estrutura do Diretório
-static/: Arquivos de estilização e imagens.
+static/: Arquivos CSS, ícones e scripts de gráficos.
 
-templates/: Páginas HTML divididas entre área pública e administrativa.
+templates/: Páginas HTML (JinJa2) divididas entre área pública e administrativa.
 
-.venv/: Ambiente virtual do projeto.
+models.py: Definição das tabelas relacional (Salas x Reservas x Usuários).
 
-reservas.py/: Arquivo principal com a lógica de rotas e execução.
+seed.py: Script de automação de dados em massa.
 
-database.db/: Arquivo do banco de dados SQLite.
+🗺️ Roadmap de Melhorias
+[x] Implementação de sistema de autenticação administrativa.
 
-Roadmap de Melhorias
-Implementação de sistema de autenticação para a área administrativa.
+[x] Geração de dados de teste massivos para análise de performance.
 
-Integração com serviço de envio de e-mails para notificações.
+[ ] Integração com serviço de envio de e-mails para confirmação.
 
-Adição de calendário interativo no frontend para seleção de datas.
+[ ] Adição de calendário interativo no frontend para seleção de horários.

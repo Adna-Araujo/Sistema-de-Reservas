@@ -23,7 +23,7 @@
                 <i class="fa fa-filter"></i> Filtrar
             </button>
             
-            <a href="{{ url_for('.export_csv', data_inicio=data_inicio, data_fim=data_fim) }}" class="btn btn-success">
+            <a href="{{ url_for('view_relatorio_final.export_csv', data_inicio=data_inicio, data_fim=data_fim) }}" class="btn btn-success">
                 <i class="fa fa-download"></i> Exportar CSV
             </a>
         </form>
@@ -37,7 +37,9 @@
                 Visão Gráfica Diária
             </div>
             <div class="panel-body">
-                <canvas id="reservasChart" height="100"></canvas>
+                <div style="height: 300px;">
+                    <canvas id="reservasChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -54,14 +56,14 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Data (YYYY-MM-DD)</th>
+                            <th>Data</th>
                             <th>Total de Reservas</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in relatorio %}
                         <tr>
-                            <td>{{ item.data }}</td>
+                            <td class="data-formatar">{{ item.data }}</td>
                             <td><span class="label label-primary">{{ item.total_reservas }}</span></td>
                         </tr>
                         {% else %}
@@ -83,22 +85,38 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
 
 <script>
-    // Envolver todo o código em uma IIFE para isolar o escopo e evitar conflitos de 'const/let'
     (function() { 
-        // Dados passados do Python (usando o filtro 'tojson')
-        const labels = JSON.parse('{{ labels | tojson | safe }}');
+        // 1. Função auxiliar para formatar data ISO (YYYY-MM-DD) para BR (DD/MM/YYYY)
+        function formatarDataBR(dataStr) {
+            if (!dataStr || !dataStr.includes('-')) return dataStr;
+            const partes = dataStr.split('-');
+            return partes[2] + '/' + partes[1] + '/' + partes[0];
+        }
+
+        // 2. Corrigir datas na Tabela via JavaScript (mais garantido)
+        document.querySelectorAll('.data-formatar').forEach(el => {
+            el.innerText = formatarDataBR(el.innerText.trim());
+        });
+
+        // 3. Lógica do Gráfico
+        const labelsBrutas = JSON.parse('{{ labels | tojson | safe }}');
         const dataValues = JSON.parse('{{ data_values | tojson | safe }}');
+
+        const labelsFormatadas = labelsBrutas.map(label => {
+            const p = label.split('-');
+            return p[2] + '/' + p[1]; // Ex: 11/01
+        });
 
         if (dataValues.length > 0) {
             const ctx = document.getElementById('reservasChart').getContext('2d');
-            const myChart = new Chart(ctx, {
-                type: 'bar', // Tipo de gráfico: barras
+            new Chart(ctx, {
+                type: 'bar',
                 data: {
-                    labels: labels,
+                    labels: labelsFormatadas,
                     datasets: [{
                         label: 'Total de Reservas',
                         data: dataValues,
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
                         borderColor: 'rgba(54, 162, 235, 1)',
                         borderWidth: 1
                     }]
@@ -106,38 +124,23 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    // CORREÇÃO AQUI: Usando a sintaxe 'scales' da v4
                     scales: {
-                        y: { // O nome do eixo é 'y' (antes era yAxes[0])
-                            beginAtZero: true,
+                        yAxes: [{
                             ticks: {
-                                // O 'callback' deve ser aplicado aos ticks
-                                callback: function(value) {
-                                    if (value % 1 === 0) return value;
-                                },
-                                color: '#e2e2e2' // Adicionando cor para o tema 'darkly'
+                                beginAtZero: true,
+                                stepSize: 1,
+                                fontColor: '#403f3f2'
                             }
-                        },
-                        x: { // O nome do eixo é 'x' (antes era xAxes[0])
+                        }],
+                        xAxes: [{
                             ticks: {
-                                autoSkip: true,
-                                maxRotation: 45,
-                                minRotation: 45,
-                                color: '#e2e2e2' // Adicionando cor para o tema 'darkly'
+                                fontColor: '#403f3f2'
                             }
-                        }
-                    },
-                    plugins: { // Agrupa configurações não relacionadas a escalas
-                        legend: {
-                            display: false
-                        }
+                        }]
                     }
                 }
             });
-        } else {
-            // Exibe uma mensagem se não houver dados
-            document.getElementById('reservasChart').parentElement.innerHTML = '<p class="text-center text-muted">Nenhum dado para o gráfico no período selecionado.</p>';
         }
-    })(); // A função é chamada imediatamente
+    })();
 </script>
 {% endblock %}

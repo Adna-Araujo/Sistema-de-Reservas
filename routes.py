@@ -23,7 +23,7 @@ main_bp = Blueprint('main_bp', __name__)
 @main_bp.route("/")
 @main_bp.route("/index")
 def index():
-    return render_template('index.html', status="Estrutura de Templates OK!")
+    return render_template('home_usuario.html', status="Estrutura de Templates OK!")
 
 @main_bp.route("/register", methods=['GET', 'POST'])
 def register():
