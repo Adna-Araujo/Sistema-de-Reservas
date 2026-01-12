@@ -1,5 +1,13 @@
+# Web Framework e Extensões Core
 Flask
 Flask-Login
 Flask-SQLAlchemy
 Flask-WTF
 Flask-Bcrypt
+
+# Interface Administrativa (Obrigatório para o seu dashboard funcionar)
+Flask-Admin
+
+# Utilitários e Database Connector
+SQLAlchemy
+WTForms
